@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سامانه جامع ارزیابی ریسک پروژه‌های معدنی</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.0.0/dist/chart.min.css">
+  <style>
+    @font-face {
+      font-family: 'Vazir';
+      src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+<!-- قبل از تگ </body> اضافه کنید -->
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+<script>
+  // تنظیمات Firebase خود را اینجا قرار دهید
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // مقداردهی اولیه Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // تغییر تابع ارسال فرم برای ذخیره در Firebase
+  document.getElementById('miningRiskForm').addEventListener('submit', function(event) {
+    // کد قبلی...
+    
+    // ذخیره در Firebase
+    db.collection("projectRiskData").add(formData)
+      .then(() => {
+        console.log("داده‌ها با موفقیت در Firebase ذخیره شدند");
+        alert('اطلاعات پروژه "' + projectName + '" با موفقیت ثبت شد.');
+      })
+      .catch((error) => {
+        console.error("خطا در ذخیره داده‌ها: ", error);
+        alert('خطا در ذخیره اطلاعات: ' + error.message);
+      });
+      
+    // کد بقیه تابع...
+  });
+</script>
+    body {
+      font-family: 'Vazir', Tahoma, Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      direction: rtl;
+    }
+    
+    .bg-primary-gradient {
+      background: linear-gradient(135deg, #1e4b94 0%, #2980b9 100%);
+      color: white;
+    }
+    
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .card-header {
+      border-bottom: none;
+      padding: 1.5rem;
+    }
+    
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e0e0e0;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: #2980b9;
+      box-shadow: 0 0 0 0.25rem rgba(41, 128, 185, 0.25);
+    }
+    
+    .risk-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .risk-table th, .risk-table td {
+      padding: 1rem;
+      vertical-align: middle;
+    }
+    
+    .risk-table th {
+      background-color: #f0f5fa;
+      font-weight: 600;
+    }
+    
+    .risk-table tr:nth-child(even) {
+      background-color: #f9fbfd;
+    }
+    
+    .risk-options {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+    
+    .risk-option {
+      display: inline-flex;
+      align-items: center;
+      margin: 0.25rem 0.5rem;
+      cursor: pointer;
+    }
+    
+    .risk-option input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+    
+    .risk-option-text {
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      background-color: #f0f0f0;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    
+    .risk-option input:checked + .risk-option-text {
+      color: white;
+    }
+    
+    .risk-option.level-1 input:checked + .risk-option-text {
+      background-color: #28a745;
+    }
+    
+    .risk-option.level-2 input:checked + .risk-option-text {
+      background-color: #ffc107;
+    }
+    
+    .risk-option.level-3 input:checked + .risk-option-text {
+      background-color: #fd7e14;
+    }
+    
+    .risk-option.level-4 input:checked + .risk-option-text {
+      background-color: #dc3545;
+    }
+    
+    .btn-primary {
+      background-color: #2980b9;
+      border-color: #2980b9;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary:hover {
+      background-color: #1c638d;
+      border-color: #1c638d;
+      transform: translateY(-2px);
+    }
+    
+    .btn-outline-primary {
+      color: #2980b9;
+      border-color: #2980b9;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: #2980b9;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    .feature-icon {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #e9f2fa;
+      color: #2980b9;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    
+    .nav-pills .nav-link {
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      color: #495057;
+      transition: all 0.3s;
+    }
+    
+    .nav-pills .nav-link.active {
+      background-color: #2980b9;
+      color: white;
+    }
+    
+    .tab-pane {
+      padding: 2rem 0;
+    }
+    
+    .risk-summary-card {
+      border-radius: 15px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      border-right: 5px solid #ccc;
+    }
+    
+    .risk-summary-card.high-risk {
+      border-right-color: #dc3545;
+    }
+    
+    .risk-summary-card.medium-risk {
+      border-right-color: #ffc107;
+    }
+    
+    .risk-summary-card.low-risk {
+      border-right-color: #28a745;
+    }
+    
+    .risk-badge {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 30px;
+    }
+    
+    .risk-badge.risk-1 {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .risk-badge.risk-2 {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .risk-badge.risk-3 {
+      background-color: #ffe5d0;
+      color: #ad4e00;
+    }
+    
+    .risk-badge.risk-4 {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    
+    .project-filter {
+      padding: 1rem;
+      border-radius: 10px;
+      background-color: #f8f9fa;
+      margin-bottom: 1.5rem;
+    }
+    
+    .comparison-table th, .comparison-table td {
+      text-align: center;
+    }
+    
+    .comparison-table th:first-child, .comparison-table td:first-child {
+      text-align: right;
+    }
+    
+    .export-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+      .risk-options {
+        flex-direction: row;
+      }
+      
+      .risk-option {
+        margin: 0.25rem;
+      }
+      
+      .risk-option-text {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.9rem;
+      }
+      
+      .export-btn {
+        position: static;
+        margin-top: 1rem;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-primary-gradient py-5">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="fw-bold mb-3">سامانه جامع ارزیابی ریسک پروژه‌های معدنی</h1>
+          <p class="lead mb-4">ابزاری هوشمند برای شناسایی، ارزیابی و مدیریت ریسک‌های پروژه‌های معدنی</p>
+        </div>
+        <div class="col-md-4 text-md-end text-center">
+          <i class="bi bi-bar-chart-line-fill" style="font-size: 5rem;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container py-5">
+    <div class="row mb-5">
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon mx-auto">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h4 class="mb-3">شناسایی ریسک</h4>
+            <p class="text-muted">شناسایی و طبقه‌بندی ریسک‌های مختلف پروژه‌های معدنی در ۸ حوزه کلیدی</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon mx-auto">
+              <i class="bi bi-graph-up"></i>
+            </div>
+            <h4 class="mb-3">تحلیل مقایسه‌ای</h4>
+            <p class="text-muted">مقایسه سطح ریسک پروژه‌های مختلف و شناسایی الگوهای ریسک</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon mx-auto">
+              <i class="bi bi-file-earmark-arrow-down"></i>
+            </div>
+            <h4 class="mb-3">گزارش‌های تحلیلی</h4>
+            <p class="text-muted">تولید گزارش‌های تحلیلی و نمودارهای بصری برای تصمیم‌گیری بهتر</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <ul class="nav nav-pills mb-4 justify-content-center" id="riskTabs" role="tablist">
+      <li class="nav-item mx-2" role="presentation">
+        <button class="nav-link active" id="assessment-tab" data-bs-toggle="pill" data-bs-target="#assessment" type="button" role="tab" aria-controls="assessment" aria-selected="true">
+          <i class="bi bi-clipboard-check me-2"></i>ارزیابی ریسک
+        </button>
+      </li>
+      <li class="nav-item mx-2" role="presentation">
+        <button class="nav-link" id="results-tab" data-bs-toggle="pill" data-bs-target="#results" type="button" role="tab" aria-controls="results" aria-selected="false">
+          <i class="bi bi-list-check me-2"></i>نتایج ارزیابی
+        </button>
+      </li>
+      <li class="nav-item mx-2" role="presentation">
+        <button class="nav-link" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics" type="button" role="tab" aria-controls="analytics" aria-selected="false">
+          <i class="bi bi-bar-chart me-2"></i>تحلیل و گزارش
+        </button>
+      </li>
+    </ul>
+    
+    <div class="tab-content" id="riskTabContent">
+      <!-- بخش ارزیابی ریسک -->
+      <div class="tab-pane fade show active" id="assessment" role="tabpanel" aria-labelledby="assessment-tab">
+        <div class="card">
+          <div class="card-header bg-primary-gradient">
+            <h3 class="mb-0 text-white">فرم ارزیابی ریسک پروژه</h3>
+          </div>
+          <div class="card-body p-4">
+            <form id="miningRiskForm">
+              <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                  <label for="projectSelect" class="form-label">انتخاب پروژه:</label>
+                  <select id="projectSelect" name="projectSelect" class="form-select" required>
+                    <option value="">-- انتخاب پروژه --</option>
+                    <option value="توسعه معدن، IPCC، کارخانه تغلیظ فاز 3 و مدیریت باطله">توسعه معدن، IPCC، کارخانه تغلیظ فاز 3 و مدیریت باطله</option>
+                    <option value="کارخانه تغلیظ فاز 4 و مدیریت باطله">کارخانه تغلیظ فاز 4 و مدیریت باطله</option>
+                    <option value="افزایش ظرفیت ذوب سرچشمه">افزایش ظرفیت ذوب سرچشمه</option>
+                    <option value="کارخانه مفتول 8 میلیمتری">کارخانه مفتول 8 میلیمتری</option>
+                    <option value="استخراج فلزات گرانبها">استخراج فلزات گرانبها</option>
+                    <option value="کارخانه CS2">کارخانه CS2</option>
+                    <option value="توسعه معدن و کارخانه تغلیظ فاز 1 و مدیریت باطله سریدون">توسعه معدن و کارخانه تغلیظ فاز 1 و مدیریت باطله سریدون</option>
+                    <option value="توسعه معدن و کارخانه تغلیظ فاز 2 و مدیریت باطله سریدون">توسعه معدن و کارخانه تغلیظ فاز 2 و مدیریت باطله سریدون</option>
+                    <option value="توسعه معدن و کارخانه تغلیظ دره زار و مدیریت باطله دره زار">توسعه معدن و کارخانه تغلیظ دره زار و مدیریت باطله دره زار</option>
+                    <option value="توسعه معدن، کارخانه تغلیظ و مدیریت باطله دره آلو">توسعه معدن، کارخانه تغلیظ و مدیریت باطله دره آلو</option>
+                    <option value="توسعه معدن، کارخانه تغلیظ و مدیریت باطله میدوک-فاز 2">توسعه معدن، کارخانه تغلیظ و مدیریت باطله میدوک-فاز 2</option>
+                    <option value="توسعه معدن، کارخانه تغلیظ و مدیریت باطله میدوک-فاز 3">توسعه معدن، کارخانه تغلیظ و مدیریت باطله میدوک-فاز 3</option>
+                    <option value="کارخانه تغلیظ و مدیریت باطله فاز 4 میدوک">کارخانه تغلیظ و مدیریت باطله فاز 4 میدوک</option>
+                    <option value="افزایش ظرفیت ذوب خاتون آباد">افزایش ظرفیت ذوب خاتون آباد</option>
+                    <option value="کارخانه تغلیظ و مدیریت باطله چاه فیروزه">کارخانه تغلیظ و مدیریت باطله چاه فیروزه</option>
+                    <option value="آهک خاتون آباد-فاز 1">آهک خاتون آباد-فاز 1</option>
+                    <option value="آهک خاتون آباد-فاز 2">آهک خاتون آباد-فاز 2</option>
+                    <option value="فلوتاسیون سرباره خاتون آباد">فلوتاسیون سرباره خاتون آباد</option>
+                    <option value="توسعه معدن، کارخانه تغلیظ و مدیریت باطله فاز 3 سونگون">توسعه معدن، کارخانه تغلیظ و مدیریت باطله فاز 3 سونگون</option>
+                    <option value="توسعه معدن، کارخانه تغلیظ و مدیریت باطله فاز 4 سونگون">توسعه معدن، کارخانه تغلیظ و مدیریت باطله فاز 4 سونگون</option>
+                    <option value="کاتد سونگون">کاتد سونگون</option>
+                    <option value="آهک اهر-فاز 1">آهک اهر-فاز 1</option>
+                    <option value="آهک اهر-فاز 2">آهک اهر-فاز 2</option>
+                    <option value="کاتد چابهار">کاتد چابهار</option>
+                    <option value="افزایش ظرفیت کارخانه تغلیظ چهارگنبد">افزایش ظرفیت کارخانه تغلیظ چهارگنبد</option>
+                    <option value="افزایش ظرفیت کارخانه تغلیظ چهل کوره">افزایش ظرفیت کارخانه تغلیظ چهل کوره</option>
+                    <option value="کارخانه تغلیظ نوچون، دلفارد، سرمشک، سرکوه، دره زرشک">کارخانه تغلیظ نوچون، دلفارد، سرمشک، سرکوه، دره زرشک</option>
+                    <option value="توسعه معدن ایجو">توسعه معدن ایجو</option>
+                    <option value="اسید فسفریک بندرعباس (فاز 1)">اسید فسفریک بندرعباس (فاز 1)</option>
+                    <option value="اسید فسفریک چابهار (فاز 1)">اسید فسفریک چابهار (فاز 1)</option>
+                    <option value="ETP">ETP</option>
+                    <option value="custom">سایر (وارد کنید)</option>
+                  </select>
+                  <div id="customProjectContainer" class="mt-3" style="display: none;">
+                    <label for="customProject" class="form-label">نام پروژه:</label>
+                    <input type="text" id="customProject" class="form-control" placeholder="نام پروژه را وارد کنید">
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="evaluatorName" class="form-label">نام ارزیاب:</label>
+                  <input type="text" id="evaluatorName" name="evaluatorName" class="form-control" required>
+                </div>
+              </div>
+              
+              <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                  <label for="evaluationDate" class="form-label">تاریخ ارزیابی:</label>
+                  <input type="date" id="evaluationDate" name="evaluationDate" class="form-control" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="projectPhase" class="form-label">مرحله پروژه:</label>
+                  <select id="projectPhase" name="projectPhase" class="form-select" required>
+                    <option value="">-- انتخاب مرحله --</option>
+                    <option value="مطالعات اولیه">مطالعات اولیه</option>
+                    <option value="امکان‌سنجی">امکان‌سنجی</option>
+                    <option value="طراحی">طراحی</option>
+                    <option value="اجرا">اجرا</option>
+                    <option value="بهره‌برداری">بهره‌برداری</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="card mb-4">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0">ارزیابی عوامل ریسک</h5>
+                  <small class="text-muted">لطفاً برای هر عامل ریسک، سطح آن را با انتخاب یکی از گزینه‌های زیر مشخص کنید</small>
+                </div>
+                <div class="card-body p-0">
+                  <table class="risk-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;">عوامل ریسک</th>
+                        <th style="width: 60%;" colspan="4">سطح ریسک</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                            <div>
+                              <strong>تملک</strong>
+                              <div class="small text-muted">مشکلات مربوط به تملک اراضی و حقوق مالکیت</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td colspan="4">
+                          <div class="risk-options">
+                            <label class="risk-option level-1">
+                              <input type="radio" name="landRisk" value="1" required>
+                              <span class="risk-option-text">۱ (کم)</span>
+                            </label>
+                            <label class="risk-option level-2">
+                              <input type="radio" name="landRisk" value="2">
+                              <span class="risk-option-text">۲ (متوسط)</span>
+                            </label>
+                            <label class="risk-option level-3">
+                              <input type="radio" name="landRisk" value="3">
+                              <span class="risk-option-text">۳ (زیاد)</span>
+                            </label>
+                            <label class="risk-option level-4">
+                              <input type="radio" name="landRisk" value="4">
+                              <span class="risk-option-text">۴ (بسیار زیاد)</span>
+                            </label>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-text-fill text-primary me-2"></i>
+                            <div>
+                              <strong>قانونی و حقوقی</strong>
+                              <div class="small text-muted">مجوزات، مالیات و سایر مسائل حقوقی</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td colspan="4">
+                          <div class="risk-options">
+                            <label class="risk-option level-1">
+                              <input type="radio" name="legalRisk" value="1" required>
+                              <span class="risk-option-text">۱ (کم)</span>
+                            </label>
+                            <label class="risk-option level-2">
+                              <input type="radio" name="legalRisk" value="2">
+                              <span class="risk-option-text">۲ (متوسط)</span>
+                            </label>
+                            <label class="risk-option level-3">
+                              <input type="radio" name="legalRisk" value="3">
+                              <span class="risk-option-text">۳ (زیاد)</span>
+                            </label>
+                            <label class="risk-option level-4">
+                              <input type="radio" name="legalRisk" value="4">
+                              <span class="risk-option-text">۴ (بسیار زیاد)</span>
+                            </label>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <i class="bi bi-box-seam-fill text-primary me-2"></i>
+                            <div>
+                              <strong>تأمین مواد اولیه</strong>
+                              <div class="small text-muted">دسترسی به مواد اولیه و منابع مورد نیاز</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td colspan="4">
+                          <div class="risk-options">
+                            <label class="risk-option level-1">
+                              <input type="radio" name="materialRisk" value="1" required>
+                              <span class="risk-option-text">۱ (کم)</span>
+                            </label>
+                            <label class="risk-option level-2">
+                              <input type="radio" name="materialRisk" value="2">
+                              <span class="risk-option-text">۲ (متوسط)</span>
+                            </label>
+                            <label class="risk-option level-3">
+                              <input type="radio" name="materialRisk" value="3">
+                              <span class="risk-option-text">۳ (زیاد)</span>
+                            </label>
+                            <label class="risk-option level-4">
+                              <input type="radio" name="materialRisk" value="4">
+                              <span class="risk-option-text">۴ (بسیار زیاد)</span>
+                            </label>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <i class="bi bi-clock-history text-primary me-2"></i>
+                            <div>
+                              <strong>تأخیر در زمانبندی</strong>
+                              <div class="small text-muted">تأخیر به دلیل عو
+امل خارجی (لجستیک، زیرساخت، ...)</div>
+</div>
+</div>
+</td>
+<td colspan="4">
+<div class="risk-options">
+<label class="risk-option level-1">
+<input type="radio" name="delayRisk" value="1" required>
+<span class="risk-option-text">۱ (کم)</span>
+</label>
+<label class="risk-option level-2">
+<input type="radio" name="delayRisk" value="2">
+<span class="risk-option-text">۲ (متوسط)</span>
+</label>
+<label class="risk-option level-3">
+<input type="radio" name="delayRisk" value="3">
+<span class="risk-option-text">۳ (زیاد)</span>
+</label>
+<label class="risk-option level-4">
+<input type="radio" name="delayRisk" value="4">
+<span class="risk-option-text">۴ (بسیار زیاد)</span>
+</label>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<div class="d-flex align-items-center">
+<i class="bi bi-gear-fill text-primary me-2"></i>
+<div>
+<strong>ریسک طراحی</strong>
+<div class="small text-muted">عدم وجود دانش فنی داخلی</div>
+</div>
+</div>
+</td>
+<td colspan="4">
+<div class="risk-options">
+<label class="risk-option level-1">
+<input type="radio" name="designRisk" value="1" required>
+<span class="risk-option-text">۱ (کم)</span>
+</label>
+<label class="risk-option level-2">
+<input type="radio" name="designRisk" value="2">
+<span class="risk-option-text">۲ (متوسط)</span>
+</label>
+<label class="risk-option level-3">
+<input type="radio" name="designRisk" value="3">
+<span class="risk-option-text">۳ (زیاد)</span>
+</label>
+<label class="risk-option level-4">
+<input type="radio" name="designRisk" value="4">
+<span class="risk-option-text">۴ (بسیار زیاد)</span>
+</label>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<div class="d-flex align-items-center">
+<i class="bi bi-cart-fill text-primary me-2"></i>
+<div>
+<strong>فروش و بازاریابی محصولات</strong>
+<div class="small text-muted">چالش‌های بازار، رقابت و فروش محصولات</div>
+</div>
+</div>
+</td>
+<td colspan="4">
+<div class="risk-options">
+<label class="risk-option level-1">
+<input type="radio" name="marketRisk" value="1" required>
+<span class="risk-option-text">۱ (کم)</span>
+</label>
+<label class="risk-option level-2">
+<input type="radio" name="marketRisk" value="2">
+<span class="risk-option-text">۲ (متوسط)</span>
+</label>
+<label class="risk-option level-3">
+<input type="radio" name="marketRisk" value="3">
+<span class="risk-option-text">۳ (زیاد)</span>
+</label>
+<label class="risk-option level-4">
+<input type="radio" name="marketRisk" value="4">
+<span class="risk-option-text">۴ (بسیار زیاد)</span>
+</label>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<div class="d-flex align-items-center">
+<i class="bi bi-tree-fill text-primary me-2"></i>
+<div>
+<strong>محیط زیست</strong>
+<div class="small text-muted">مسائل زیست‌محیطی و چالش‌های مرتبط</div>
+</div>
+</div>
+</td>
+<td colspan="4">
+<div class="risk-options">
+<label class="risk-option level-1">
+<input type="radio" name="envRisk" value="1" required>
+<span class="risk-option-text">۱ (کم)</span>
+</label>
+<label class="risk-option level-2">
+<input type="radio" name="envRisk" value="2">
+<span class="risk-option-text">۲ (متوسط)</span>
+</label>
+<label class="risk-option level-3">
+<input type="radio" name="envRisk" value="3">
+<span class="risk-option-text">۳ (زیاد)</span>
+</label>
+<label class="risk-option level-4">
+<input type="radio" name="envRisk" value="4">
+<span class="risk-option-text">۴ (بسیار زیاد)</span>
+</label>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<div class="d-flex align-items-center">
+<i class="bi bi-tools text-primary me-2"></i>
+<div>
+<strong>تأمین تجهیزات خارجی</strong>
+<div class="small text-muted">دسترسی به تجهیزات و فناوری خارجی</div>
+</div>
+</div>
+</td>
+<td colspan="4">
+<div class="risk-options">
+<label class="risk-option level-1">
+<input type="radio" name="equipRisk" value="1" required>
+<span class="risk-option-text">۱ (کم)</span>
+</label>
+<label class="risk-option level-2">
+<input type="radio" name="equipRisk" value="2">
+<span class="risk-option-text">۲ (متوسط)</span>
+</label>
+<label class="risk-option level-3">
+<input type="radio" name="equipRisk" value="3">
+<span class="risk-option-text">۳ (زیاد)</span>
+</label>
+<label class="risk-option level-4">
+<input type="radio" name="equipRisk" value="4">
+<span class="risk-option-text">۴ (بسیار زیاد)</span>
+</label>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+            <div class="mb-4">
+              <label for="riskComments" class="form-label">توضیحات تکمیلی:</label>
+              <textarea id="riskComments" name="riskComments" class="form-control" rows="3" placeholder="توضیحات یا نظرات تکمیلی خود را وارد کنید..."></textarea>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-2"></i>ثبت ارزیابی
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- بخش نتایج ارزیابی -->
+    <div class="tab-pane fade" id="results" role="tabpanel" aria-labelledby="results-tab">
+      <div class="card">
+        <div class="card-header bg-primary-gradient">
+          <h3 class="mb-0 text-white">نتایج ارزیابی ریسک</h3>
+          <button class="btn btn-light btn-sm export-btn">
+            <i class="bi bi-download me-1"></i>دانلود اکسل
+          </button>
+        </div>
+        <div class="card-body p-4">
+          <div class="project-filter">
+            <div class="row">
+              <div class="col-md-6 mb-3 mb-md-0">
+                <label for="projectFilter" class="form-label">فیلتر بر اساس پروژه:</label>
+                <select id="projectFilter" class="form-select">
+                  <option value="all">همه پروژه‌ها</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="riskLevelFilter" class="form-label">فیلتر بر اساس سطح ریسک:</label>
+                <select id="riskLevelFilter" class="form-select">
+                  <option value="all">همه سطوح</option>
+                  <option value="high">ریسک بالا (3-4)</option>
+                  <option value="medium">ریسک متوسط (2-3)</option>
+                  <option value="low">ریسک پایین (1-2)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div id="riskSummaryContainer">
+            <div class="alert alert-info text-center">
+              <i class="bi bi-info-circle me-2"></i>هنوز هیچ ارزیابی ثبت نشده است.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- بخش تحلیل و گزارش -->
+    <div class="tab-pane fade" id="analytics" role="tabpanel" aria-labelledby="analytics-tab">
+      <div class="card">
+        <div class="card-header bg-primary-gradient">
+          <h3 class="mb-0 text-white">تحلیل و گزارش‌های آماری</h3>
+        </div>
+        <div class="card-body p-4">
+          <div class="row mb-4">
+            <div class="col-md-6 mb-4">
+              <div class="card h-100">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0">میانگین ریسک پروژه‌ها</h5>
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="averageRiskChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-4">
+              <div class="card h-100">
+                <div class="card-header bg-light">
+                  <h5 class="mb-0">توزیع عوامل ریسک</h5>
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="riskFactorsChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card mb-4">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">مقایسه پروژه‌ها</h5>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">انتخاب پروژه‌ها برای مقایسه:</label>
+                  <select id="compareProjects" class="form-select" multiple>
+                    <!-- گزینه‌ها به صورت پویا اضافه می‌شوند -->
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">نوع نمودار:</label>
+                  <select id="chartType" class="form-select">
+                    <option value="radar">نمودار راداری</option>
+                    <option value="bar">نمودار میله‌ای</option>
+                  </select>
+                </div>
+              </div>
+              <div class="chart-container mt-4">
+                <canvas id="comparisonChart"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">گزارش تحلیلی ریسک‌ها</h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table comparison-table">
+                  <thead>
+                    <tr>
+                      <th>عامل ریسک</th>
+                      <th>میانگین کل</th>
+                      <th>بیشترین ریسک</th>
+                      <th>کمترین ریسک</th>
+                      <th>پروژه با بیشترین ریسک</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analyticsTableBody">
+                    <!-- داده‌ها به صورت پویا اضافه می‌شوند -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال نمایش جزئیات پروژه -->
+<div class="modal fade" id="projectDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary-gradient text-white">
+        <h5 class="modal-title">جزئیات ارزیابی پروژه</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="projectDetailContent">
+        <!-- محتوای مودال به صورت پویا اضافه می‌شود -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+        <button type="button" class="btn btn-primary" id="editProjectBtn">ویرایش</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="bg-dark text-white py-4 mt-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <h5>سامانه جامع ارزیابی ریسک پروژه‌های معدنی</h5>
+        <p class="text-muted">ابزاری کارآمد برای مدیریت ریسک در پروژه‌های معدنی</p>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <p class="mb-0">© تمامی حقوق محفوظ است - ۱۴۰۴</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.0.0/dist/chart.umd.min.js"></script>
+<script>
+  // ذخیره داده‌های ارزیابی ریسک
+  const projectRiskData = {};
+  
+  // تنظیم تاریخ امروز به صورت پیش‌فرض
+  document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    document.getElementById('evaluationDate').value = `${year}-${month}-${day}`;
+    
+    // نمایش/مخفی کردن فیلد نام پروژه سفارشی
+    document.getElementById('projectSelect').addEventListener('change', function() {
+      const customProjectContainer = document.getElementById('customProjectContainer');
+      if (this.value === 'custom') {
+        customProjectContainer.style.display = 'block';
+      } else {
+        customProjectContainer.style.display = 'none';
+      }
+    });
+  });
+  
+  // ارسال فرم
+  document.getElementById('miningRiskForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    const projectSelect = document.getElementById('projectSelect');
+    let projectName = projectSelect.value;
+    
+    // بررسی اگر پروژه سفارشی انتخاب شده است
+    if (projectName === 'custom') {
+      projectName = document.getElementById('customProject').value.trim();
+      if (!projectName) {
+        alert('لطفاً نام پروژه را وارد کنید.');
+        return;
+      }
+    }
+    
+    // بررسی اعتبار انتخاب پروژه
+    if (!projectName) {
+      alert('لطفاً یک پروژه را انتخاب کنید.');
+      return;
+    }
+    
+    const evaluatorName = document.getElementById('evaluatorName').value.trim();
+    if (!evaluatorName) {
+      alert('لطفاً نام ارزیاب را وارد کنید.');
+      return;
+    }
+    
+    const evaluationDate = document.getElementById('evaluationDate').value;
+    if (!evaluationDate) {
+      alert('لطفاً تاریخ ارزیابی را وارد کنید.');
+      return;
+    }
+    
+    const projectPhase = document.getElementById('projectPhase').value;
+    if (!projectPhase) {
+      alert('لطفاً مرحله پروژه را انتخاب کنید.');
+      return;
+    }
+    
+    // جمع‌آوری داده‌های فرم
+    const formData = {
+      projectName: projectName,
+      evaluatorName: evaluatorName,
+      evaluationDate: evaluationDate,
+      projectPhase: projectPhase,
+      comments: document.getElementById('riskComments').value.trim(),
+      landRisk: parseInt(document.querySelector('input[name="landRisk"]:checked').value),
+      legalRisk: parseInt(document.querySelector('input[name="legalRisk"]:checked').value),
+      materialRisk: parseInt(document.querySelector('input[name="materialRisk"]:checked').value),
+      delayRisk: parseInt(document.querySelector('input[name="delayRisk"]:checked').value),
+      designRisk: parseInt(document.querySelector('input[name="designRisk"]:checked').value),
+      marketRisk: parseInt(document.querySelector('input[name="marketRisk"]:checked').value),
+      envRisk: parseInt(document.querySelector('input[name="envRisk"]:checked').value),
+      equipRisk: parseInt(document.querySelector('input[name="equipRisk"]:checked').value)
+    };
+    
+    // محاسبه میانگین ریسک
+    const riskValues = [
+      formData.landRisk,
+      formData.legalRisk,
+      formData.materialRisk,
+      formData.delayRisk,
+      formData.designRisk,
+      formData.marketRisk,
+      formData.envRisk,
+      formData.equipRisk
+    ];
+    
+    const totalRisk = riskValues.reduce((sum, value) => sum + value, 0);
+    const averageRisk = totalRisk / riskValues.length;
+    formData.averageRisk = averageRisk.toFixed(2);
+    formData.timestamp = new Date().toISOString();
+    
+    // ذخیره داده‌ها
+    if (!projectRiskData[projectName]) {
+      projectRiskData[projectName] = [];
+    }
+    projectRiskData[projectName].push(formData);
+    
+    // به‌روزرسانی فیلترها و نمودارها
+    updateFilters();
+    updateRiskSummary();
+    updateCharts();
+    
+    // نمایش تب نتایج
+    document.getElementById('results-tab').click();
+    
+    console.log('داده‌های فرم:', formData);
+    alert('اطلاعات پروژه "' + projectName + '" با موفقیت ثبت شد.');
+    
+    // پاک کردن انتخاب‌های فعلی
+    document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+      radio.checked = false;
+    });
+    
+    // پاک کردن فیلدهای فرم
+    document.getElementById('evaluatorName').value = '';
+    document.getElementById('riskComments').value = '';
+    document.getElementById('projectSelect').selectedIndex = 0;
+    document.getElementById('projectPhase').selectedIndex = 0;
+    document.getElementById('customProject').value = '';
+    document.getElementById('customProjectContainer').style.display = 'none';
+  });
+  
+  // به‌روزرسانی فیلترها
+  function updateFilters() {
+    const projectFilter = document.getElementById('projectFilter');
+    const compareProjects = document.getElementById('compareProjects');
+    
+    // حذف گزینه‌های قبلی به جز "همه پروژه‌ها"
+    while (projectFilter.options.length > 1) {
+      projectFilter.remove(1);
+    }
+    
+    // پاک کردن لیست مقایسه
+    compareProjects.innerHTML = '';
+    
+    // اضافه کردن پروژه‌های جدید به فیلترها
+    for (const project in projectRiskData) {
+      // اضافه کردن به فیلتر پروژه
+      const option = document.createElement('option');
+      option.value = project;
+      option.textContent = project;
+      projectFilter.appendChild(option);
+      
+      // اضافه کردن به لیست مقایسه
+      const compareOption = document.createElement('option');
+      compareOption.value = project;
+      compareOption.textContent = project;
+      compareProjects.appendChild(compareOption);
+    }
+  }
+  
+  // به‌روزرسانی خلاصه ریسک
+  function updateRiskSummary() {
+    const riskSummaryContainer = document.getElementById('riskSummaryContainer');
+    
+    // بررسی وجود داده
+    if (Object.keys(projectRiskData).length === 0) {
+      riskSummaryContainer.innerHTML = `
+        <div class="alert alert-info text-center">
+          <i class="bi bi-info-circle me-2"></i>هنوز هیچ ارزیابی ثبت نشده است.
+        </div>
+      `;
+      return;
+    }
+    
+    let summaryHTML = '';
+    
+    // ایجاد کارت برای هر پروژه
+    for (const project in projectRiskData) {
+      // استفاده از آخرین ارزیابی برای هر پروژه
+      const latestAssessment = projectRiskData[project][projectRiskData[project].length - 1];
+      const avgRisk = parseFloat(latestAssessment.averageRisk);
+      
+      let riskClass = '';
+      let riskText = '';
+      
+      if (avgRisk >= 3) {
+        riskClass = 'high-risk';
+        riskText = 'ریسک بالا';
+      } else if (avgRisk >= 2) {
+        riskClass = 'medium-risk';
+        riskText = 'ریسک متوسط';
+      } else {
+        riskClass = 'low-risk';
+        riskText = 'ریسک پایین';
+      }
+      
+      summaryHTML += `
+        <div class="card risk-summary-card ${riskClass} mb-4" data-project="${project}">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-md-6">
+                <h5 class="card-title">${project}</h5>
+                <p class="card-text text-muted mb-2">مرحله: ${latestAssessment.projectPhase} | ارزیاب: ${latestAssessment.evaluatorName}</p>
+                <p class="card-text text-muted">تاریخ ارزیابی: ${formatDate(latestAssessment.evaluationDate)}</p>
+              </div>
+              <div class="col-md-4">
+                <div class="d-flex flex-wrap">
+                  <span class="risk-badge risk-${latestAssessment.landRisk} m-1">تملک: ${latestAssessment.landRisk}</span>
+                  <span class="risk-badge risk-${latestAssessment.legalRisk} m-1">قانونی: ${latestAssessment.legalRisk}</span>
+                  <span class="risk-badge risk-${latestAssessment.materialRisk} m-1">مواد اولیه: ${latestAssessment.materialRisk}</span>
+                  <span class="risk-badge risk-${latestAssessment.delayRisk} m-1">تأخیر: ${latestAssessment.delayRisk}</span>
+                  <span class="risk-badge risk-${latestAssessment.designRisk} m-1">طراحی: ${latestAssessment.designRisk}</span>
+                  <span class="risk-badge risk-${latestAssessment.marketRisk} m-1">بازار: ${latestAssessment.marketRisk}</span>
+                  <span class="risk-badge risk-${latestAssessment.envRisk} m-1">محیط زیست: ${latestAssessment.envRisk}</span>
+                  <span class="risk-badge risk-${latestAssessment.equipRisk} m-1">تجهیزات: ${latestAssessment.equipRisk}</span>
+                </div>
+              </div>
+              <div class="col-md-2 text-md-end">
+                <div class="d-flex flex-column align-items-md-end">
+                  <h4 class="mb-2">${latestAssessment.averageRisk}</h4>
+                  <span class="badge bg-${avgRisk >= 3 ? 'danger' : avgRisk >= 2 ? 'warning' : 'success'}">${riskText}</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 text-end">
+              <button class="btn btn-sm btn-outline-primary view-details-btn" data-project="${project}">
+                <i class="bi bi-eye me-1"></i>مشاهده جزئیات
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    riskSummaryContainer.innerHTML = summaryHTML;
+    
+    // اضافه کردن رویداد کلیک برای دکمه‌های مشاهده جزئیات
+    document.querySelectorAll('.view-details-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const project = this.getAttribute('data-project');
+        showProjectDetails(project);
+      });
+    });
+  }
+  
+  // نمایش جزئیات پروژه در مودال
+  function showProjectDetails(project) {
+    const latestAssessment = projectRiskData[project][projectRiskData[project].length - 1];
+    const avgRisk = parseFloat(latestAssessment.averageRisk);
+    
+    let riskClass = '';
+    let riskText = '';
+    
+    if (avgRisk >= 3) {
+      riskClass = 'danger';
+      riskText = 'ریسک بالا';
+    } else if (avgRisk >= 2) {
+      riskClass = 'warning';
+      riskText = 'ریسک متوسط';
+    } else {
+      riskClass = 'success';
+      riskText = 'ریسک پایین';
+    }
+    
+    const detailContent = `
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <h4>${project}</h4>
+          <p class="text-muted">
+            مرحله: ${latestAssessment.projectPhase} |
+ارزیاب: ${latestAssessment.evaluatorName} | تاریخ: ${formatDate(latestAssessment.evaluationDate)}
+</p>
+</div>
+<div class="col-md-4 text-md-end">
+<div class="d-inline-block p-3 rounded-circle bg-${riskClass} text-white" style="width: 60px; height: 60px; text-align: center; line-height: 40px; font-size: 24px; font-weight: bold;">
+${latestAssessment.averageRisk}
+</div>
+<div class="mt-2">
+<span class="badge bg-${riskClass}">${riskText}</span>
+</div>
+</div>
+</div>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>عامل ریسک</th>
+              <th>امتیاز</th>
+              <th>سطح ریسک</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>تملک</td>
+              <td>${latestAssessment.landRisk}</td>
+              <td><span class="badge risk-badge risk-${latestAssessment.landRisk}">${getRiskLevelText(latestAssessment.landRisk)}</span></td>
+            </tr>
+            <tr>
+              <td>قانونی و حقوقی</td>
+              <td>${latestAssessment.legalRisk}</td>
+              <td><span class="badge risk-badge risk-${latestAssessment.legalRisk}">${getRiskLevelText(latestAssessment.legalRisk)}</span></td>
+            </tr>
+            <tr>
+              <td>تأمین مواد اولیه</td>
+              <td>${latestAssessment.materialRisk}</td>
+              <td><span class="badge risk-badge risk-${latestAssessment.materialRisk}">${getRiskLevelText(latestAssessment.materialRisk)}</span></td>
+            </tr>
+            <tr>
+              <td>تأخیر در زمانبندی</td>
+              <td>${latestAssessment.delayRisk}</td>
+              <td><span class="badge risk-badge risk-${latestAssessment.delayRisk}">${getRiskLevelText(latestAssessment.delayRisk)}</span></td>
+            </tr>
+            <tr>
+              <td>ریسک طراحی</td>
+              <td>${latestAssessment.designRisk}</td>
+              <td><span class="badge risk-badge risk-${latestAssessment.designRisk}">${getRiskLevelText(latestAssessment.designRisk)}</span></td>
+            </tr>
+            <tr>
+              <td>فروش و بازاریابی محصولات</td>
+              <td>${latestAssessment.marketRisk}</td>
+              <td><span class="badge risk-badge risk-${latestAssessment.marketRisk}">${getRiskLevelText(latestAssessment.marketRisk)}</span></td>
+            </tr>
+            <tr>
+              <td>محیط زیست</td>
+              <td>${latestAssessment.envRisk}</td>
+              <td><span class="badge risk-badge risk-${latestAssessment.envRisk}">${getRiskLevelText(latestAssessment.envRisk)}</span></td>
+            </tr>
+            <tr>
+              <td>تأمین تجهیزات خارجی</td>
+              <td>${latestAssessment.equipRisk}</td>
+              <td><span class="badge risk-badge risk-${latestAssessment.equipRisk}">${getRiskLevelText(latestAssessment.equipRisk)}</span></td>
+            </tr>
+            <tr class="table-${riskClass}">
+              <td><strong>میانگین کل</strong></td>
+              <td><strong>${latestAssessment.averageRisk}</strong></td>
+              <td><span class="badge bg-${riskClass}">${riskText}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      ${latestAssessment.comments ? `
+      <div class="mt-4">
+        <h5>توضیحات تکمیلی:</h5>
+        <div class="p-3 bg-light rounded">
+          ${latestAssessment.comments}
+        </div>
+      </div>
+      ` : ''}
+      
+      <div class="mt-4">
+        <h5>نمودار ریسک:</h5>
+        <div class="chart-container">
+          <canvas id="projectDetailChart"></canvas>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('projectDetailContent').innerHTML = detailContent;
+    
+    // نمایش مودال
+    const modal = new bootstrap.Modal(document.getElementById('projectDetailModal'));
+    modal.show();
+    
+    // ایجاد نمودار راداری
+    setTimeout(() => {
+      const ctx = document.getElementById('projectDetailChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['تملک', 'قانونی و حقوقی', 'تأمین مواد اولیه', 'تأخیر در زمانبندی', 'ریسک طراحی', 'فروش و بازاریابی', 'محیط زیست', 'تجهیزات خارجی'],
+          datasets: [{
+            label: 'سطح ریسک',
+            data: [
+              latestAssessment.landRisk,
+              latestAssessment.legalRisk,
+              latestAssessment.materialRisk,
+              latestAssessment.delayRisk,
+              latestAssessment.designRisk,
+              latestAssessment.marketRisk,
+              latestAssessment.envRisk,
+              latestAssessment.equipRisk
+            ],
+            backgroundColor: 'rgba(41, 128, 185, 0.2)',
+            borderColor: '#2980b9',
+            borderWidth: 2,
+            pointBackgroundColor: '#2980b9'
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              min: 0,
+              max: 4,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    }, 500);
+  }
+  
+  // به‌روزرسانی نمودارها
+  function updateCharts() {
+    if (Object.keys(projectRiskData).length === 0) {
+      return;
+    }
+    
+    // داده‌های نمودار میانگین ریسک
+    const projectNames = [];
+    const averageRisks = [];
+    const backgroundColors = [];
+    
+    for (const project in projectRiskData) {
+      const latestAssessment = projectRiskData[project][projectRiskData[project].length - 1];
+      const avgRisk = parseFloat(latestAssessment.averageRisk);
+      
+      projectNames.push(project);
+      averageRisks.push(avgRisk);
+      
+      if (avgRisk >= 3) {
+        backgroundColors.push('#dc3545');
+      } else if (avgRisk >= 2) {
+        backgroundColors.push('#ffc107');
+      } else {
+        backgroundColors.push('#28a745');
+      }
+    }
+    
+    // نمودار میانگین ریسک
+    const avgRiskCtx = document.getElementById('averageRiskChart');
+    if (avgRiskCtx) {
+      if (avgRiskCtx.chart) {
+        avgRiskCtx.chart.destroy();
+      }
+      
+      avgRiskCtx.chart = new Chart(avgRiskCtx, {
+        type: 'bar',
+        data: {
+          labels: projectNames,
+          datasets: [{
+            label: 'میانگین ریسک',
+            data: averageRisks,
+            backgroundColor: backgroundColors,
+            borderColor: backgroundColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 4
+            }
+          }
+        }
+      });
+    }
+    
+    // داده‌های نمودار عوامل ریسک
+    const riskFactors = {
+      'تملک': 0,
+      'قانونی و حقوقی': 0,
+      'تأمین مواد اولیه': 0,
+      'تأخیر در زمانبندی': 0,
+      'ریسک طراحی': 0,
+      'فروش و بازاریابی': 0,
+      'محیط زیست': 0,
+      'تجهیزات خارجی': 0
+    };
+    
+    let totalProjects = 0;
+    
+    for (const project in projectRiskData) {
+      const latestAssessment = projectRiskData[project][projectRiskData[project].length - 1];
+      
+      riskFactors['تملک'] += latestAssessment.landRisk;
+      riskFactors['قانونی و حقوقی'] += latestAssessment.legalRisk;
+      riskFactors['تأمین مواد اولیه'] += latestAssessment.materialRisk;
+      riskFactors['تأخیر در زمانبندی'] += latestAssessment.delayRisk;
+      riskFactors['ریسک طراحی'] += latestAssessment.designRisk;
+      riskFactors['فروش و بازاریابی'] += latestAssessment.marketRisk;
+      riskFactors['محیط زیست'] += latestAssessment.envRisk;
+      riskFactors['تجهیزات خارجی'] += latestAssessment.equipRisk;
+      
+      totalProjects++;
+    }
+    
+    const riskFactorLabels = Object.keys(riskFactors);
+    const riskFactorValues = riskFactorLabels.map(factor => riskFactors[factor] / totalProjects);
+    
+    // نمودار عوامل ریسک
+    const riskFactorsCtx = document.getElementById('riskFactorsChart');
+    if (riskFactorsCtx) {
+      if (riskFactorsCtx.chart) {
+        riskFactorsCtx.chart.destroy();
+      }
+      
+      riskFactorsCtx.chart = new Chart(riskFactorsCtx, {
+        type: 'radar',
+        data: {
+          labels: riskFactorLabels,
+          datasets: [{
+            label: 'میانگین ریسک در همه پروژه‌ها',
+            data: riskFactorValues,
+            backgroundColor: 'rgba(41, 128, 185, 0.2)',
+            borderColor: '#2980b9',
+            borderWidth: 2,
+            pointBackgroundColor: '#2980b9'
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              beginAtZero: true,
+              min: 0,
+              max: 4,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // به‌روزرسانی جدول تحلیلی
+    updateAnalyticsTable();
+  }
+  
+  // به‌روزرسانی جدول تحلیلی
+  function updateAnalyticsTable() {
+    if (Object.keys(projectRiskData).length === 0) {
+      return;
+    }
+    
+    const analyticsTableBody = document.getElementById('analyticsTableBody');
+    analyticsTableBody.innerHTML = '';
+    
+    const riskFactors = [
+      { name: 'تملک', key: 'landRisk' },
+      { name: 'قانونی و حقوقی', key: 'legalRisk' },
+      { name: 'تأمین مواد اولیه', key: 'materialRisk' },
+      { name: 'تأخیر در زمانبندی', key: 'delayRisk' },
+      { name: 'ریسک طراحی', key: 'designRisk' },
+      { name: 'فروش و بازاریابی', key: 'marketRisk' },
+      { name: 'محیط زیست', key: 'envRisk' },
+      { name: 'تجهیزات خارجی', key: 'equipRisk' }
+    ];
+    
+    riskFactors.forEach(factor => {
+      let sum = 0;
+      let max = 0;
+      let min = 4;
+      let maxProject = '';
+      let totalProjects = 0;
+      
+      for (const project in projectRiskData) {
+        const latestAssessment = projectRiskData[project][projectRiskData[project].length - 1];
+        const riskValue = latestAssessment[factor.key];
+        
+        sum += riskValue;
+        totalProjects++;
+        
+        if (riskValue > max) {
+          max = riskValue;
+          maxProject = project;
+        }
+        
+        if (riskValue < min) {
+          min = riskValue;
+        }
+      }
+      
+      const avg = (sum / totalProjects).toFixed(2);
+      
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${factor.name}</td>
+        <td>${avg}</td>
+        <td>${max}</td>
+        <td>${min}</td>
+        <td>${maxProject}</td>
+      `;
+      
+      analyticsTableBody.appendChild(row);
+    });
+  }
+  
+  // تبدیل تاریخ به فرمت مناسب
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
+  }
+  
+  // دریافت متن سطح ریسک
+  function getRiskLevelText(level) {
+    switch (parseInt(level)) {
+      case 1: return 'کم';
+      case 2: return 'متوسط';
+      case 3: return 'زیاد';
+      case 4: return 'بسیار زیاد';
+      default: return '';
+    }
+  }
+  
+  // فیلتر کردن پروژه‌ها
+  document.getElementById('projectFilter').addEventListener('change', function() {
+    const selectedProject = this.value;
+    const riskLevelFilter = document.getElementById('riskLevelFilter').value;
+    filterProjects(selectedProject, riskLevelFilter);
+  });
+  
+  document.getElementById('riskLevelFilter').addEventListener('change', function() {
+    const selectedProject = document.getElementById('projectFilter').value;
+    const riskLevelFilter = this.value;
+    filterProjects(selectedProject, riskLevelFilter);
+  });
+  
+  function filterProjects(projectFilter, riskLevelFilter) {
+    const projectCards = document.querySelectorAll('.risk-summary-card');
+    
+    projectCards.forEach(card => {
+      const projectName = card.getAttribute('data-project');
+      const latestAssessment = projectRiskData[projectName][projectRiskData[projectName].length - 1];
+      const avgRisk = parseFloat(latestAssessment.averageRisk);
+      
+      let showByProject = (projectFilter === 'all' || projectFilter === projectName);
+      let showByRiskLevel = true;
+      
+      if (riskLevelFilter === 'high') {
+        showByRiskLevel = avgRisk >= 3;
+      } else if (riskLevelFilter === 'medium') {
+        showByRiskLevel = avgRisk >= 2 && avgRisk < 3;
+      } else if (riskLevelFilter === 'low') {
+        showByRiskLevel = avgRisk < 2;
+      }
+      
+      if (showByProject && showByRiskLevel) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+  
+  // مقایسه پروژه‌ها
+  document.getElementById('compareProjects').addEventListener('change', updateComparisonChart);
+  document.getElementById('chartType').addEventListener('change', updateComparisonChart);
+  
+  function updateComparisonChart() {
+    const selectedProjects = Array.from(document.getElementById('compareProjects').selectedOptions).map(option => option.value);
+    const chartType = document.getElementById('chartType').value;
+    
+    if (selectedProjects.length === 0) {
+      return;
+    }
+    
+    const comparisonCtx = document.getElementById('comparisonChart');
+    if (comparisonCtx.chart) {
+      comparisonCtx.chart.destroy();
+    }
+    
+    const labels = ['تملک', 'قانونی و حقوقی', 'تأمین مواد اولیه', 'تأخیر در زمانبندی', 'ریسک طراحی', 'فروش و بازاریابی', 'محیط زیست', 'تجهیزات خارجی'];
+    const datasets = [];
+    
+    const colors = [
+      { border: '#2980b9', background: 'rgba(41, 128, 185, 0.2)' },
+      { border: '#e74c3c', background: 'rgba(231, 76, 60, 0.2)' },
+      { border: '#27ae60', background: 'rgba(39, 174, 96, 0.2)' },
+      { border: '#f39c12', background: 'rgba(243, 156, 18, 0.2)' },
+      { border: '#9b59b6', background: 'rgba(155, 89, 182, 0.2)' }
+    ];
+    
+    selectedProjects.forEach((project, index) => {
+      const latestAssessment = projectRiskData[project][projectRiskData[project].length - 1];
+      const colorIndex = index % colors.length;
+      
+      datasets.push({
+        label: project,
+        data: [
+          latestAssessment.landRisk,
+          latestAssessment.legalRisk,
+          latestAssessment.materialRisk,
+          latestAssessment.delayRisk,
+          latestAssessment.designRisk,
+          latestAssessment.marketRisk,
+          latestAssessment.envRisk,
+          latestAssessment.equipRisk
+        ],
+        backgroundColor: chartType === 'radar' ? colors[colorIndex].background : colors[colorIndex].border,
+        borderColor: colors[colorIndex].border,
+        borderWidth: 2
+      });
+    });
+    
+    comparisonCtx.chart = new Chart(comparisonCtx, {
+      type: chartType,
+      data: {
+        labels: labels,
+        datasets: datasets
+      },
+      options: {
+        scales: {
+          r: {
+            beginAtZero: true,
+            min: 0,
+            max: 4,
+            ticks: {
+              stepSize: 1
+            }
+          },
+          y: {
+            beginAtZero: true,
+            max: 4
+          }
+        }
+      }
+    });
+// ذخیره داده‌ها در LocalStorage
+localStorage.setItem('projectRiskData', JSON.stringify(projectRiskData));
+
+// بازیابی داده‌ها هنگام بارگذاری صفحه
+document.addEventListener('DOMContentLoaded', function() {
+  const savedData = localStorage.getItem('projectRiskData');
+  if (savedData) {
+    Object.assign(projectRiskData, JSON.parse(savedData));
+    updateFilters();
+    updateRiskSummary();
+    updateCharts();
+  }
+});
+// ذخیره داده‌ها در LocalStorage
+localStorage.setItem('projectRiskData', JSON.stringify(projectRiskData));
+
+// بازیابی داده‌ها هنگام بارگذاری صفحه
+document.addEventListener('DOMContentLoaded', function() {
+  const savedData = localStorage.getItem('projectRiskData');
+  if (savedData) {
+    Object.assign(projectRiskData, JSON.parse(savedData));
+    updateFilters();
+    updateRiskSummary();
+    updateCharts();
+  }
+});
+  }
+// Add this function to export data to Excel
+function exportToExcel() {
+  // Check if there's data to export
+  if (Object.keys(projectRiskData).length === 0) {
+    alert('هیچ داده‌ای برای خروجی گرفتن وجود ندارد.');
+    return;
+  }
+
+  // Create a workbook with a worksheet
+  let wb = XLSX.utils.book_new();
+  wb.Props = {
+    Title: "گزارش ارزیابی ریسک پروژه‌های معدنی",
+    Subject: "ارزیابی ریسک",
+    Author: "سامانه ارزیابی ریسک",
+    CreatedDate: new Date()
+  };
+  
+  // Create data for the main summary sheet
+  let summaryData = [];
+  
+  // Add headers
+  summaryData.push([
+    "نام پروژه", "مرحله", "ارزیاب", "تاریخ ارزیابی", 
+    "تملک", "قانونی و حقوقی", "تأمین مواد اولیه", "تأخیر در زمانبندی", 
+    "ریسک طراحی", "فروش و بازاریابی", "محیط زیست", "تجهیزات خارجی", 
+    "میانگین ریسک", "توضیحات"
+  ]);
+  
+  // Add data for each project
+  for (const project in projectRiskData) {
+    const latestAssessment = projectRiskData[project][projectRiskData[project].length - 1];
+    
+    summaryData.push([
+      project,
+      latestAssessment.projectPhase,
+      latestAssessment.evaluatorName,
+      formatDate(latestAssessment.evaluationDate),
+      latestAssessment.landRisk,
+      latestAssessment.legalRisk,
+      latestAssessment.materialRisk,
+      latestAssessment.delayRisk,
+      latestAssessment.designRisk,
+      latestAssessment.marketRisk,
+      latestAssessment.envRisk,
+      latestAssessment.equipRisk,
+      latestAssessment.averageRisk,
+      latestAssessment.comments || ""
+    ]);
+  }
+  
+  // Create worksheet from data
+  let summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+  
+  // Set column widths
+  const wscols = [
+    {wch: 25}, // Project name
+    {wch: 15}, // Phase
+    {wch: 15}, // Evaluator
+    {wch: 12}, // Date
+    {wch: 8},  // Risk factors
+    {wch: 8},
+    {wch: 8},
+    {wch: 8},
+    {wch: 8},
+    {wch: 8},
+    {wch: 8},
+    {wch: 8},
+    {wch: 10}, // Average
+    {wch: 30}  // Comments
+  ];
+  
+  summaryWs['!cols'] = wscols;
+  
+  // Add worksheet to workbook
+  XLSX.utils.book_append_sheet(wb, summaryWs, "خلاصه ارزیابی ریسک");
+  
+  // Create analytics worksheet
+  let analyticsData = [];
+  analyticsData.push(["عامل ریسک", "میانگین کل", "بیشترین ریسک", "کمترین ریسک", "پروژه با بیشترین ریسک"]);
+  
+  const riskFactors = [
+    { name: 'تملک', key: 'landRisk' },
+    { name: 'قانونی و حقوقی', key: 'legalRisk' },
+    { name: 'تأمین مواد اولیه', key: 'materialRisk' },
+    { name: 'تأخیر در زمانبندی', key: 'delayRisk' },
+    { name: 'ریسک طراحی', key: 'designRisk' },
+    { name: 'فروش و بازاریابی', key: 'marketRisk' },
+    { name: 'محیط زیست', key: 'envRisk' },
+    { name: 'تجهیزات خارجی', key: 'equipRisk' }
+  ];
+  
+  riskFactors.forEach(factor => {
+    let sum = 0;
+    let max = 0;
+    let min = 4;
+    let maxProject = '';
+    let totalProjects = 0;
+    
+    for (const project in projectRiskData) {
+      const latestAssessment = projectRiskData[project][projectRiskData[project].length - 1];
+      const riskValue = latestAssessment[factor.key];
+      
+      sum += riskValue;
+      totalProjects++;
+      
+      if (riskValue > max) {
+        max = riskValue;
+        maxProject = project;
+      }
+      
+      if (riskValue < min) {
+        min = riskValue;
+      }
+    }
+    
+    const avg = (sum / totalProjects).toFixed(2);
+    analyticsData.push([factor.name, avg, max, min, maxProject]);
+  });
+  
+  let analyticsWs = XLSX.utils.aoa_to_sheet(analyticsData);
+  XLSX.utils.book_append_sheet(wb, analyticsWs, "تحلیل ریسک");
+  
+  // Generate Excel file and trigger download
+  const fileName = "گزارش_ارزیابی_ریسک_" + new Date().toISOString().split('T')[0] + ".xlsx";
+  XLSX.writeFile(wb, fileName);
+}
+
+// Connect the export button to the function
+document.querySelector('.export-btn').addEventListener('click', exportToExcel);
+</script>
+</body>
+ </html>
